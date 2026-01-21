@@ -18,6 +18,8 @@ export class AuthService {
 
         const match = await bcrypt.compare(password, user.password)
         if (!match) return null
+
+        return user;
     }
 
     async login(user: any) {

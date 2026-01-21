@@ -7,9 +7,14 @@ import { UserService } from '../user/user.service.js';
 import { LocalStrategy } from './local.strategy.js';
 
 @Module({
-  imports:[JwtModule,PrismaModule],
+  imports: [
+    JwtModule.register({
+      secret: process.env.JWT_SECRET!,
+      signOptions: { expiresIn: '60s' },
+    }),
+    PrismaModule],
   controllers: [AuthController],
-  providers: [AuthService, UserService,LocalStrategy]
+  providers: [AuthService, UserService, LocalStrategy]
 })
 
 export class AuthModule { }
