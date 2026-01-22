@@ -4,6 +4,7 @@ import { PrismaModule } from '../prisma/prisma.module.js';
 
 @Module({
   imports:[PrismaModule],
-  providers: [UserService]
+  providers: [UserService],
+  exports:[UserService],
 })
 export class UserModule { }
