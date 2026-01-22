@@ -5,17 +5,18 @@ import { UserService } from '../user/user.service.js';
 import { SignUpDto } from './dto/signup.dto.js';
 import { ApiBody } from '@nestjs/swagger';
 import { LoginDto } from './dto/login.dto.js';
+import type { RequestWithUser } from './types/request-with-user.type.js';
+
 
 @Controller('auth')
 export class AuthController {
     constructor(
         private authService: AuthService,
-        private userService: UserService
     ) { }
-    @ApiBody({type:LoginDto})
+    @ApiBody({ type: LoginDto })
     @UseGuards(LocalAuthGuard)
     @Post('login')
-    async login(@Request() req: any) {
+    async login(@Request() req: RequestWithUser) {
         return this.authService.login(req.user)
     }
 
