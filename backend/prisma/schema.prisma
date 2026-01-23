@@ -32,26 +32,15 @@ model User {
 }
 
 model Teacher {
-  id       Int      @id @default(autoincrement())
-  userId   Int      @unique
-  user     User     @relation(fields: [userId], references: [id])
-  subjects String[]
+  id        Int      @id @default(autoincrement())
+  userId    Int      @unique
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
 }
 
 model Student {
-  id     Int  @id @default(autoincrement())
-  userId Int  @unique
-  user   User @relation(fields: [userId], references: [id])
-
-  classId Int? @unique
-  class   Class? @relation(fields: [classId], references: [id])
-
-}
-
-model Class {
-  id      Int    @id @default(autoincrement())
-  name    String
-  section String
-
-  student Student[]
+  id        Int      @id @default(autoincrement())
+  userId    Int      @unique
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
 }
