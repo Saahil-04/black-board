@@ -8,6 +8,9 @@ export class UserProfileDto {
     id: number;
 
     @ApiProperty()
+    name:string
+
+    @ApiProperty()
     email: string;
 
     @ApiProperty()
