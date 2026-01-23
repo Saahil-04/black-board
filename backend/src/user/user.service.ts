@@ -39,7 +39,14 @@ export class UserService {
                 }
             });
         }
-        return user
+        if (data.role === 'TEACHER') {
+            await this.prisma.teacher.create({
+                data: {
+                    userId: user.id,
+                }
+            });
+        }
+        return user;
     }
 
     async findById(id: number): Promise<UserProfileDto | null> {
@@ -47,7 +54,7 @@ export class UserService {
             where: { id },
             select: {
                 id: true,
-                name:true,
+                name: true,
                 email: true,
                 role: true,
                 createdAt: true,
