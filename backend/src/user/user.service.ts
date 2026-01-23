@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { CreateUserDto } from './dto/create_user.dto.js';
 import * as bcrypt from 'bcrypt'
+import { UserProfileDto } from './dto/user-profile.dto.js';
 
 @Injectable()
 export class UserService {
@@ -41,7 +42,7 @@ export class UserService {
         return user
     }
 
-    async findById(id: number) {
+    async findById(id: number): Promise<UserProfileDto | null> {
         return this.prisma.user.findUnique({
             where: { id },
             select: {
