@@ -19,4 +19,9 @@ export class StudentController {
         return this.studentService.findByUserId(req.user.userId)
     }
 
+    @Get('me/class')
+    async getMyClass(@Request() req: RequestWithUser) {
+        return this.studentService.findMyClass(req.user.userId)
+    }
+
 }

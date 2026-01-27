@@ -16,9 +16,25 @@ export class TeacherService {
                 user: {
                     select: {
                         id: true,
-                        name:true,
+                        name: true,
                         email: true,
                         role: true,
+                    },
+                },
+            },
+        });
+    }
+
+    async findMyClasses(userId: number) {
+        return this.prisma.teacher.findUnique({
+            where: { userId },
+            select: {
+                id: true,
+                classes: {
+                    select: {
+                        id: true,
+                        name: true,
+                        section: true,
                     },
                 },
             },

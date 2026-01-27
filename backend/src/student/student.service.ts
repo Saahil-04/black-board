@@ -16,13 +16,29 @@ export class StudentService {
                 user: {
                     select: {
                         id: true,
-                        name:true,
+                        name: true,
                         email: true,
                         role: true,
                     },
                 },
             },
         });
+    }
+
+    async findMyClass(userId: number) {
+        return this.prisma.student.findUnique({
+            where: { userId },
+            select: {
+                id: true,
+                class: {
+                    select: {
+                        id: true,
+                        name: true,
+                        section: true,
+                    }
+                }
+            }
+        })
     }
 
 }
