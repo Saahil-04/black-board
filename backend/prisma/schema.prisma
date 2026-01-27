@@ -36,6 +36,7 @@ model Teacher {
   userId    Int      @unique
   user      User     @relation(fields: [userId], references: [id])
   createdAt DateTime @default(now())
+  classes   Class[]
 }
 
 model Student {
@@ -43,4 +44,16 @@ model Student {
   userId    Int      @unique
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id])
+  class     Class?   @relation(fields: [classId], references: [id])
+  classId   Int?
+}
+
+model Class {
+  id        Int      @id @default(autoincrement())
+  name      String
+  section   String?
+  createdAt DateTime @default(now())
+
+  student Student[]
+  teacher Teacher[]
 }

@@ -6,10 +6,14 @@ import { AuthModule } from './auth/auth.module.js';
 import { UserModule } from './user/user.module.js';
 import { StudentModule } from './student/student.module.js';
 import { TeacherModule } from './teacher/teacher.module.js';
+import { ClassModule } from './class/class.module.js';
+import { AdminController } from './admin/admin.controller.js';
+import { AdminService } from './admin/admin.service.js';
+import { AdminModule } from './admin/admin.module.js';
 
 @Module({
-  imports: [PrismaModule, AuthModule, UserModule, StudentModule, TeacherModule],
-  controllers: [AppController],
-  providers: [AppService],
+  imports: [PrismaModule, AuthModule, UserModule, StudentModule, TeacherModule, ClassModule, AdminModule],
+  controllers: [AppController, AdminController],
+  providers: [AppService, AdminService],
 })
 export class AppModule {}
