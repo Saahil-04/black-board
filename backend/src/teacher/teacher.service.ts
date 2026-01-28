@@ -40,4 +40,18 @@ export class TeacherService {
             },
         });
     }
+
+    async isTeacherOfClass(userId: number, classId: number) {
+        return this.prisma.teacher.findFirst({
+            where: {
+                userId,
+                classes: {
+                    some: {
+                        id: classId,
+                    },
+                },
+            },
+        })
+    }
+
 }
