@@ -52,4 +52,37 @@ export class ClassService {
         });
     }
 
+    async getStudentRoster(classId: number) {
+        return this.prisma.class.findUnique({
+            where: { id: classId },
+            select: {
+                id: true,
+                name: true,
+                section: true,
+                student: {
+                    select: {
+                        id: true,
+                        user: {
+                            select: {
+                                id: true,
+                                name: true,
+                            },
+                        },
+                    },
+                },
+                teacher: {
+                    select: {
+                        id: true,
+                        user: {
+                            select: {
+                                id: true,
+                                name: true,
+                            },
+                        },
+                    },
+                },
+            },
+        });
+    }
+
 }

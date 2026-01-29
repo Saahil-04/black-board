@@ -41,4 +41,13 @@ export class StudentService {
         })
     }
 
+    async getMyClassId(userId: number): Promise<number | null> {
+
+        const student = await this.prisma.student.findUnique({
+            where: { userId },
+            select: { classId: true },
+        });
+        return student?.classId ?? null
+    }
+
 }

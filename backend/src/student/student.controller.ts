@@ -3,6 +3,7 @@ import { ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import type { RequestWithUser } from '../auth/types/request-with-user.type.js';
 import { StudentService } from './student.service.js';
+import { ClassService } from '../class/class.service.js';
 
 
 @UseGuards(JwtAuthGuard)
@@ -11,7 +12,8 @@ import { StudentService } from './student.service.js';
 export class StudentController {
 
     constructor(
-        private studentService: StudentService
+        private studentService: StudentService,
+        private classService: ClassService,
     ) { }
 
     @Get('me')
@@ -22,6 +24,20 @@ export class StudentController {
     @Get('me/class')
     async getMyClass(@Request() req: RequestWithUser) {
         return this.studentService.findMyClass(req.user.userId)
+    }
+
+    @Get('me/roster')
+    async getMyClassRoster(@Request() req: RequestWithUser) {
+        const classId = await this.studentService.getMyClassId(req.user.userId)
+
+        if (!classId) {
+            return {
+                class: null,
+                students: [],
+                teachers: [],
+            }
+        }
+        return this.classService.getStudentRoster(classId)
     }
 
 }
