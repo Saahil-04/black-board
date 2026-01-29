@@ -2,11 +2,12 @@ import { Module } from '@nestjs/common';
 import { ClassController } from './class.controller.js';
 import { ClassService } from './class.service.js';
 import { PrismaModule } from '../prisma/prisma.module.js';
+import { ClassAccessPolicy } from './policies/class-access.policy.js';
 import { TeacherService } from '../teacher/teacher.service.js';
 
 @Module({
   imports:[PrismaModule],
   controllers: [ClassController],
-  providers: [ClassService,TeacherService]
+  providers: [ClassService,ClassAccessPolicy,TeacherService]
 })
 export class ClassModule {}
