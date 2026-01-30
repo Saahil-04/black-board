@@ -10,9 +10,10 @@ import { ClassModule } from './class/class.module.js';
 import { AdminController } from './admin/admin.controller.js';
 import { AdminService } from './admin/admin.service.js';
 import { AdminModule } from './admin/admin.module.js';
+import { SubjectModule } from './subject/subject.module.js';
 
 @Module({
-  imports: [PrismaModule, AuthModule, UserModule, StudentModule, TeacherModule, ClassModule, AdminModule],
+  imports: [PrismaModule, AuthModule, UserModule, StudentModule, TeacherModule, ClassModule, AdminModule, SubjectModule],
   controllers: [AppController, AdminController],
   providers: [AppService, AdminService],
 })

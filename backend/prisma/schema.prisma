@@ -32,11 +32,12 @@ model User {
 }
 
 model Teacher {
-  id        Int      @id @default(autoincrement())
-  userId    Int      @unique
-  user      User     @relation(fields: [userId], references: [id])
-  createdAt DateTime @default(now())
+  id        Int       @id @default(autoincrement())
+  userId    Int       @unique
+  user      User      @relation(fields: [userId], references: [id])
+  createdAt DateTime  @default(now())
   classes   Class[]
+  subjects  Subject[]
 }
 
 model Student {
@@ -54,6 +55,18 @@ model Class {
   section   String?
   createdAt DateTime @default(now())
 
-  student Student[]
-  teacher Teacher[]
+  student  Student[]
+  teacher  Teacher[]
+  subjects Subject[]
+}
+
+model Subject {
+  id        Int      @id @default(autoincrement())
+  name      String
+  classId   Int
+  teacherId Int
+  createdAt DateTime @default(now())
+
+  class   Class   @relation(fields: [classId], references: [id])
+  teacher Teacher @relation(fields: [teacherId], references: [id])
 }

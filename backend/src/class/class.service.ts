@@ -34,7 +34,7 @@ export class ClassService {
                                 email: true,
                             },
                         },
-                    },
+                    },  
                 },
                 teacher: {
                     select: {
