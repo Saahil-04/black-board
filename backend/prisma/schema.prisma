@@ -32,21 +32,23 @@ model User {
 }
 
 model Teacher {
-  id        Int       @id @default(autoincrement())
-  userId    Int       @unique
-  user      User      @relation(fields: [userId], references: [id])
-  createdAt DateTime  @default(now())
-  classes   Class[]
-  subjects  Subject[]
+  id          Int          @id @default(autoincrement())
+  userId      Int          @unique
+  user        User         @relation(fields: [userId], references: [id])
+  createdAt   DateTime     @default(now())
+  classes     Class[]
+  subjects    Subject[]
+  attendances Attendance[]
 }
 
 model Student {
-  id        Int      @id @default(autoincrement())
-  userId    Int      @unique
-  createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id])
-  class     Class?   @relation(fields: [classId], references: [id])
-  classId   Int?
+  id          Int          @id @default(autoincrement())
+  userId      Int          @unique
+  createdAt   DateTime     @default(now())
+  user        User         @relation(fields: [userId], references: [id])
+  class       Class?       @relation(fields: [classId], references: [id])
+  classId     Int?
+  attendances Attendance[]
 }
 
 model Class {
@@ -67,6 +69,30 @@ model Subject {
   teacherId Int
   createdAt DateTime @default(now())
 
-  class   Class   @relation(fields: [classId], references: [id])
+  class       Class        @relation(fields: [classId], references: [id])
+  teacher     Teacher      @relation(fields: [teacherId], references: [id])
+  attendances Attendance[]
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+}
+
+model Attendance {
+  id     Int              @id @default(autoincrement())
+  date   DateTime
+  status AttendanceStatus
+
+  studentId Int
+  subjectId Int
+  teacherId Int
+
+  createdAt DateTime @default(now())
+
+  student Student @relation(fields: [studentId], references: [id])
+  subject Subject @relation(fields: [subjectId], references: [id])
   teacher Teacher @relation(fields: [teacherId], references: [id])
+
+  @@unique([date, studentId, subjectId])
 }

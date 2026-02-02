@@ -51,4 +51,15 @@ export class SubjectService {
         });
     }
 
+    isTeacherofSubject(userId: number, subjectId: number) {
+        return this.prismaService.subject.findFirst({
+            where: {
+                id: subjectId,
+                teacher: {
+                    userId
+                },
+            },
+        });
+    }
+
 }

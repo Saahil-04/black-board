@@ -11,10 +11,11 @@ import { AdminController } from './admin/admin.controller.js';
 import { AdminService } from './admin/admin.service.js';
 import { AdminModule } from './admin/admin.module.js';
 import { SubjectModule } from './subject/subject.module.js';
+import { AttendanceModule } from './attendance/attendance.module.js';
 
 @Module({
-  imports: [PrismaModule, AuthModule, UserModule, StudentModule, TeacherModule, ClassModule, AdminModule, SubjectModule],
+  imports: [PrismaModule, AuthModule, UserModule, StudentModule, TeacherModule, ClassModule, AdminModule, SubjectModule, AttendanceModule],
   controllers: [AppController, AdminController],
   providers: [AppService, AdminService],
 })
-export class AppModule {}
+export class AppModule { }
