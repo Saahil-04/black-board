@@ -53,4 +53,18 @@ export class AttendanceController {
     }
 
 
+    @Get('me/summary')
+    async getMyAttendanceSummary(@Request() req: RequestWithUser) {
+        if (req.user.role !== Role.STUDENT) {
+            throw new ForbiddenException()
+        }
+
+        const student = await this.studentService.findByUserId(req.user.userId)
+
+        return {
+            overall: await this.attendanceService.getStudentOverallSummary(student!.id),
+            subjects: await this.attendanceService.getStudentSubjectSummary(student!.id)
+        };
+    }
+
 }

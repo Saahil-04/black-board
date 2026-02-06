@@ -1,11 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { MarkAttendanceDto } from './dto/mark-attendance.dto.js';
+import { AttendanceStatus } from '../generated/prisma/enums.js';
+
 
 @Injectable()
 export class AttendanceService {
     constructor(
         private prisma: PrismaService,
+
     ) { }
 
     async markAttendance(teacherId: number, dto: MarkAttendanceDto) {
@@ -38,4 +41,67 @@ export class AttendanceService {
         });
     }
 
+    async getStudentOverallSummary(studentId: number) {
+        const total = await this.prisma.attendance.count({
+            where: { studentId }
+        });
+        const present = await this.prisma.attendance.count({
+            where: {
+                studentId,
+                status: 'PRESENT'
+            },
+        });
+
+        return {
+            totalClasses: total,
+            presentClasses: present,
+            percentage: total === 0 ? 0 : Math.round((present / total) * 100),
+        }
+    }
+
+    async getStudentSubjectSummary(studentId: number) {
+        const records = await this.prisma.attendance.groupBy({
+            by: ['subjectId', 'status'],
+            where: { studentId },
+            _count: {
+                _all: true,
+            },
+        });
+
+        const subjectMap = new Map<number, { present: number, total: number }>();
+
+        for (const r of records) {
+            const entry = subjectMap.get(r.subjectId) || { present: 0, total: 0 };
+
+            entry.total += r._count._all;
+            if (r.status === AttendanceStatus.PRESENT) {
+                entry.present += r._count._all
+            }
+            subjectMap.set(r.subjectId, entry)
+
+        }
+
+        const subjectIds = [...subjectMap.keys()];
+
+        const subjects = await this.prisma.subject.findMany({
+            where: { id: { in: subjectIds } },
+            select: { id: true, name: true }
+        });
+
+        return subjects.map((s) => {
+
+            const data = subjectMap.get(s.id)
+            return {
+                subjectId: s.id,
+                subjectName: s.name,
+                presentClasses: data?.present ?? 0,
+                totalClasses: data?.total ?? 0,
+                percentage:
+                    data?.total === 0
+                        ? 0
+                        : Math.round((data!.present / data!.total) * 100)
+            };
+        });
+    }
 }
+
