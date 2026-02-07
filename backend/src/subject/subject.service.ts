@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { CreateSubjectDto } from './dto/create-subject.dto.js';
 
@@ -52,7 +52,7 @@ export class SubjectService {
     }
 
     isTeacherofSubject(userId: number, subjectId: number) {
-        return this.prismaService.subject.findFirst({
+        const subject = this.prismaService.subject.findFirst({
             where: {
                 id: subjectId,
                 teacher: {
@@ -60,6 +60,14 @@ export class SubjectService {
                 },
             },
         });
+
+        if (!subject) {
+            throw new ForbiddenException(
+                'You are not assigned to this subject',
+            );
+        }
+
+        return subject;
     }
 
 }

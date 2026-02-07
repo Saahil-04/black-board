@@ -103,5 +103,59 @@ export class AttendanceService {
             };
         });
     }
+
+    async getTeacherSubjectSummary(subjectId: number) {
+
+        const records = await this.prisma.attendance.groupBy({
+            by: ['studentId', 'status'],
+            where: { subjectId },
+            _count: {
+                _all: true
+            },
+        });
+
+        const studentMap = new Map<number, { present: number, total: number }>();
+
+        for (const r of records) {
+            const entry = studentMap.get(r.studentId) || { present: 0, total: 0 }
+
+            entry.total += r._count._all
+            if (r.status === AttendanceStatus.PRESENT) {
+                entry.present += r._count._all
+            }
+            studentMap.set(r.studentId, entry)
+        }
+
+        const studentIds = [...studentMap.keys()]
+
+        const students = await this.prisma.student.findMany({
+            where: { id: { in: studentIds } },
+            select: {
+                id: true,
+                user: {
+                    select: {
+                        id: true,
+                        name: true
+                    },
+                },
+            },
+        });
+
+        return students.map((s) => {
+            const data = studentMap.get(s.id)
+            return {
+                studentId: s.id,
+                studentName: s.user.name,
+                totalClasses: data?.total ?? 0,
+                presentClasses: data?.present ?? 0,
+                percentage:
+                    data?.total === 0
+                        ? 0
+                        : Math.round((data!.present / data!.total) * 100)
+
+            }
+        });
+    }
+
 }
 

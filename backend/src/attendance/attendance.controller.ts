@@ -1,4 +1,4 @@
-import { Body, Controller, ForbiddenException, Get, Post, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, ForbiddenException, Get, Param, ParseIntPipe, Post, Request, UseGuards } from '@nestjs/common';
 import { AttendanceService } from './attendance.service.js';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { ApiBearerAuth } from '@nestjs/swagger';
@@ -20,26 +20,6 @@ export class AttendanceController {
         private studentService: StudentService,
         private teacherService: TeacherService,
     ) { }
-
-    @Post('mark')
-    async markAttendance(
-        @Request() req: RequestWithUser,
-        @Body() dto: MarkAttendanceDto,
-    ) {
-        if (req.user.role !== Role.TEACHER) {
-            throw new ForbiddenException()
-        }
-
-        const teacher = await this.teacherService.findByUserId(req.user.userId)
-
-        const allowed = await this.subjectService.isTeacherofSubject(req.user.userId, dto.subjectId)
-
-        if (!allowed) {
-            throw new ForbiddenException('You are not assigned to this Subject')
-        }
-
-        return this.attendanceService.markAttendance(teacher!.id, dto)
-    }
 
     @Get('me')
     async getMyAttendance(@Request() req: RequestWithUser) {
@@ -67,4 +47,38 @@ export class AttendanceController {
         };
     }
 
+    @Get('teacher/subject/:subjectId/summary')
+    async getTeacherSubjectSummary(
+        @Param('subjectId', ParseIntPipe) subjectId:
+            number, @Request() req: RequestWithUser
+    ) {
+        if (req.user.role !== Role.TEACHER) {
+            throw new ForbiddenException()
+        }
+
+        await this.subjectService.isTeacherofSubject(req.user.userId, subjectId)
+
+        return this.attendanceService.getTeacherSubjectSummary(subjectId)
+
+    }
+
+    @Post('mark')
+    async markAttendance(
+        @Request() req: RequestWithUser,
+        @Body() dto: MarkAttendanceDto,
+    ) {
+        if (req.user.role !== Role.TEACHER) {
+            throw new ForbiddenException()
+        }
+
+        const teacher = await this.teacherService.findByUserId(req.user.userId)
+
+        const allowed = await this.subjectService.isTeacherofSubject(req.user.userId, dto.subjectId)
+
+        if (!allowed) {
+            throw new ForbiddenException('You are not assigned to this Subject')
+        }
+
+        return this.attendanceService.markAttendance(teacher!.id, dto)
+    }
 }
