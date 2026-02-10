@@ -1,4 +1,4 @@
-import { Body, Controller, ForbiddenException, Get, Param, ParseIntPipe, Post, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, ForbiddenException, Get, Param, ParseIntPipe, Post, Query, Request, UseGuards } from '@nestjs/common';
 import { AttendanceService } from './attendance.service.js';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { ApiBearerAuth } from '@nestjs/swagger';
@@ -21,6 +21,28 @@ export class AttendanceController {
         private teacherService: TeacherService,
     ) { }
 
+    private buildDateFilter(from?: string, to?: string) {
+        if (!from && !to) return undefined
+
+        const filter: any = { gte: Date, lte: Date }
+
+        if (from) {
+            const fromDate = new Date(from);
+            if (!isNaN(fromDate.getTime())) {
+                filter.gte = fromDate;
+            }
+        }
+
+        if (to) {
+            const toDate = new Date(to)
+            if (!isNaN(toDate.getTime())) {
+                toDate.setHours(23, 59, 59, 999);
+                filter.lte = toDate
+            }
+        }
+        return Object.keys(filter).length ? filter : undefined
+    }
+
     @Get('me')
     async getMyAttendance(@Request() req: RequestWithUser) {
         if (req.user.role !== Role.STUDENT) {
@@ -34,23 +56,35 @@ export class AttendanceController {
 
 
     @Get('me/summary')
-    async getMyAttendanceSummary(@Request() req: RequestWithUser) {
+    async getMyAttendanceSummary(
+        @Request() req: RequestWithUser,
+        @Query('from') from?: string,
+        @Query('to') to?: string,
+    ) {
+
+        
+
         if (req.user.role !== Role.STUDENT) {
             throw new ForbiddenException()
         }
 
         const student = await this.studentService.findByUserId(req.user.userId)
 
+        const dateFilter = this.buildDateFilter(from, to)
+ 
+
         return {
-            overall: await this.attendanceService.getStudentOverallSummary(student!.id),
-            subjects: await this.attendanceService.getStudentSubjectSummary(student!.id)
+            overall: await this.attendanceService.getStudentOverallSummary(student!.id, dateFilter),
+            subjects: await this.attendanceService.getStudentSubjectSummary(student!.id, dateFilter)
         };
     }
 
     @Get('teacher/subject/:subjectId/summary')
     async getTeacherSubjectSummary(
-        @Param('subjectId', ParseIntPipe) subjectId:
-            number, @Request() req: RequestWithUser
+        @Param('subjectId', ParseIntPipe) subjectId: number,
+        @Request() req: RequestWithUser,
+        @Query('from') from?: string,
+        @Query('to') to?: string,
     ) {
         if (req.user.role !== Role.TEACHER) {
             throw new ForbiddenException()
@@ -58,7 +92,9 @@ export class AttendanceController {
 
         await this.subjectService.isTeacherofSubject(req.user.userId, subjectId)
 
-        return this.attendanceService.getTeacherSubjectSummary(subjectId)
+        const dateFilter = this.buildDateFilter(from, to)
+
+        return this.attendanceService.getTeacherSubjectSummary(subjectId, dateFilter)
 
     }
 

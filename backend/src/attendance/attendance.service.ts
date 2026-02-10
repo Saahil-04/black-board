@@ -41,13 +41,20 @@ export class AttendanceService {
         });
     }
 
-    async getStudentOverallSummary(studentId: number) {
-        const total = await this.prisma.attendance.count({
-            where: { studentId }
-        });
+    async getStudentOverallSummary(studentId: number, dateFilter?: { gte?: Date, lte?: Date }) {
+
+        const where: any = { studentId }
+
+        if (dateFilter) {
+            where.date = dateFilter
+        }
+
+     
+
+        const total = await this.prisma.attendance.count({ where });
         const present = await this.prisma.attendance.count({
             where: {
-                studentId,
+                ...where,
                 status: 'PRESENT'
             },
         });
@@ -59,10 +66,19 @@ export class AttendanceService {
         }
     }
 
-    async getStudentSubjectSummary(studentId: number) {
+    async getStudentSubjectSummary(studentId: number, dateFilter?: { gte?: Date, lte?: Date }) {
+
+        const where: any = { studentId }
+
+        if (dateFilter) {
+            where.date = dateFilter
+        }
+
+
+
         const records = await this.prisma.attendance.groupBy({
             by: ['subjectId', 'status'],
-            where: { studentId },
+            where,
             _count: {
                 _all: true,
             },
@@ -104,11 +120,17 @@ export class AttendanceService {
         });
     }
 
-    async getTeacherSubjectSummary(subjectId: number) {
+    async getTeacherSubjectSummary(subjectId: number, dateFilter: { gte: Date, lte: Date }) {
+
+        const where: any = { subjectId }
+
+        if (dateFilter) {
+            where.date = dateFilter
+        }
 
         const records = await this.prisma.attendance.groupBy({
             by: ['studentId', 'status'],
-            where: { subjectId },
+            where,
             _count: {
                 _all: true
             },
