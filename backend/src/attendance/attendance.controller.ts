@@ -24,7 +24,7 @@ export class AttendanceController {
     private buildDateFilter(from?: string, to?: string) {
         if (!from && !to) return undefined
 
-        const filter: any = { gte: Date, lte: Date }
+        const filter: any = {}
 
         if (from) {
             const fromDate = new Date(from);
@@ -62,7 +62,7 @@ export class AttendanceController {
         @Query('to') to?: string,
     ) {
 
-        
+
 
         if (req.user.role !== Role.STUDENT) {
             throw new ForbiddenException()
@@ -71,12 +71,25 @@ export class AttendanceController {
         const student = await this.studentService.findByUserId(req.user.userId)
 
         const dateFilter = this.buildDateFilter(from, to)
- 
+
 
         return {
             overall: await this.attendanceService.getStudentOverallSummary(student!.id, dateFilter),
             subjects: await this.attendanceService.getStudentSubjectSummary(student!.id, dateFilter)
         };
+    }
+
+    @Get('me/eligibilty')
+    async getMyEligibilty(
+        @Request() req: RequestWithUser,
+    ) {
+        if (req.user.role !== Role.STUDENT) {
+            throw new ForbiddenException()
+        }
+
+        const student = await this.studentService.findByUserId(req.user.userId)
+
+        return this.attendanceService.getMyEligibilty(student!.id)
     }
 
     @Get('teacher/subject/:subjectId/summary')
@@ -95,6 +108,21 @@ export class AttendanceController {
         const dateFilter = this.buildDateFilter(from, to)
 
         return this.attendanceService.getTeacherSubjectSummary(subjectId, dateFilter)
+
+    }
+
+    @Get('teacher/subject/:subjectId/eligibility')
+    async getTeacherSubjectEligibility(
+        @Param('subjectId', ParseIntPipe) subjectId: number,
+        @Request() req: RequestWithUser
+    ) {
+        if (req.user.role !== Role.TEACHER) {
+            throw new ForbiddenException()
+        }
+
+        await this.subjectService.isTeacherofSubject(req.user.userId, subjectId)
+
+        return this.attendanceService.getTeacherSubjectEligibility(subjectId)
 
     }
 

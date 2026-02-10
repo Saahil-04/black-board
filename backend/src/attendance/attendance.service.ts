@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { MarkAttendanceDto } from './dto/mark-attendance.dto.js';
 import { AttendanceStatus } from '../generated/prisma/enums.js';
+import { MIN_ATTENDANCE_PERCENTAGE } from './constants/attendance.constants.js';
 
 
 @Injectable()
@@ -49,7 +50,7 @@ export class AttendanceService {
             where.date = dateFilter
         }
 
-     
+
 
         const total = await this.prisma.attendance.count({ where });
         const present = await this.prisma.attendance.count({
@@ -120,7 +121,28 @@ export class AttendanceService {
         });
     }
 
-    async getTeacherSubjectSummary(subjectId: number, dateFilter: { gte: Date, lte: Date }) {
+    async getMyEligibilty(studentId: number) {
+
+        const subjectSummaries = await this.getStudentSubjectSummary(studentId)
+
+        const subjects = subjectSummaries.map((s) => ({
+            subjectId: s.subjectId,
+            subjectName: s.subjectName,
+            percentage: s.percentage,
+            eligible: s.percentage >= MIN_ATTENDANCE_PERCENTAGE
+        }))
+
+        const overallEligibliity = subjects.every((s) => s.eligible)
+
+        return {
+            eligible: overallEligibliity,
+            minimumRequired: MIN_ATTENDANCE_PERCENTAGE,
+            subjects
+        }
+
+    }
+
+    async getTeacherSubjectSummary(subjectId: number, dateFilter?: { gte: Date, lte: Date }) {
 
         const where: any = { subjectId }
 
@@ -177,6 +199,28 @@ export class AttendanceService {
 
             }
         });
+    }
+
+    async getTeacherSubjectEligibility(subjectId: number) {
+        const report = await this.getTeacherSubjectSummary(subjectId)
+
+        const students = report.map((s) => ({
+            studentId: s.studentId,
+            studentName: s.studentName,
+            percentage: s.percentage,
+            eligible: s.percentage >= MIN_ATTENDANCE_PERCENTAGE
+        }))
+
+        const eligibleCount = students.filter((s) => s.eligible).length
+        const notEligibleCount = students.length - eligibleCount
+
+        return {
+            minimumRequired: MIN_ATTENDANCE_PERCENTAGE,
+            totalStudents: students.length,
+            eligibleCount,
+            notEligibleCount,
+            students
+        }
     }
 
 }
