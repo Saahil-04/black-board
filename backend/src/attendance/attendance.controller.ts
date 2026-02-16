@@ -79,7 +79,7 @@ export class AttendanceController {
         };
     }
 
-    @Get('me/eligibilty')
+    @Get('me/eligibility')
     async getMyEligibilty(
         @Request() req: RequestWithUser,
     ) {
